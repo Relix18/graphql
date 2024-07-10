@@ -1,11 +1,24 @@
-import { gql, useQuery } from "@apollo/client";
+import { gql, useLazyQuery, useQuery } from "@apollo/client";
 import { getUser } from "./graphql/query/query";
 
 function App() {
-  const { data, loading, error } = useQuery(gql(getUser));
+  const [fetchUser, { data, loading, error }] = useLazyQuery(gql(getUser));
   if (error) return <div>Error</div>;
   console.log(data);
-  return <div>{loading ? <div>Loading</div> : <div>App</div>}</div>;
+  return (
+    <>
+      {loading ? (
+        <div>Loading</div>
+      ) : (
+        <div>
+          {data?.users.map((user) => (
+            <p>{user.name}</p>
+          ))}
+          <button onClick={() => fetchUser()}>Fetch User</button>
+        </div>
+      )}
+    </>
+  );
 }
 
 export default App;

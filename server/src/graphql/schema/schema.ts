@@ -3,30 +3,31 @@ type User{
     name:String!
     _id:ID!
     email:String!
-    password: String
-    role: String!
-    verified:Boolean!
-    
+    password: String 
 }
 
-type AddressDetails{
-        name: String!
-        email: String!
-        phone: Int!
-        street: String!
-        city: String!
-        state: String!
-        zip: Int!
+type AuthPayload{
+    token: String!
+    user: User!
 }
 
-type Addresses {
-    user: User
-    address: AddressDetails
+type Todo{
+    _id:ID!
+    title:String!
+    description:String!
+    user:User!
 }
 
 type Query{
     users:[User]
-    user(id:ID!): User
-    addresses:[Addresses]
+    user(id:ID!):User
+    getTodos(id:ID!):[Todo]
+    deleteTodo(id:ID!):String
+}
+
+type Mutation{
+    register(name:String!,email:String!,password:String!):AuthPayload!
+    logIn(email:String!,password:String!):AuthPayload!
+    createTodo(title:String!,description:String!,user:ID!):Todo
 }
 `;
