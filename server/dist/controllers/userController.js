@@ -78,3 +78,9 @@ export const getUser = async (id) => {
     console.log(user);
     return user;
 };
+export const authUser = async ({ user }) => {
+    if (!user) {
+        throw new Error("Not authenticated");
+    }
+    return user;
+};

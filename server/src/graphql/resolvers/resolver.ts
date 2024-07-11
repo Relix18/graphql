@@ -1,14 +1,15 @@
 import {
+  authUser,
   getAllUsers,
   getUser,
   logIn,
-  register,
 } from "../../controllers/userController.js";
 import {
   createTodo,
   deleteTodo,
   getTodos,
 } from "../../controllers/dataController.js";
+import { register } from "module";
 
 export const resolver = {
   Query: {
@@ -16,16 +17,17 @@ export const resolver = {
     user: (_: any, args: any) => getUser(args.id),
     getTodos: (_: any, args: any) => getTodos(args.id),
     deleteTodo: (_: any, args: any) => deleteTodo(args.id),
+    currentUser: async (_: any, __: any, { req }: { req: any }) =>
+      await authUser(req),
   },
   Todo: {
     user: async (todo: any) => {
-      console.log(todo.user);
       return await getUser(todo.user);
     },
   },
   Mutation: {
-    logIn,
-    register,
     createTodo,
+    register,
+    logIn,
   },
 };

@@ -1,24 +1,16 @@
-import { gql, useLazyQuery, useQuery } from "@apollo/client";
-import { getUser } from "./graphql/query/query";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./components/auth/Login.tsx";
+import Page from "./components/Page.tsx";
 
-function App() {
-  const [fetchUser, { data, loading, error }] = useLazyQuery(gql(getUser));
-  if (error) return <div>Error</div>;
-  console.log(data);
+const App = () => {
   return (
-    <>
-      {loading ? (
-        <div>Loading</div>
-      ) : (
-        <div>
-          {data?.users.map((user) => (
-            <p>{user.name}</p>
-          ))}
-          <button onClick={() => fetchUser()}>Fetch User</button>
-        </div>
-      )}
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Page />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;

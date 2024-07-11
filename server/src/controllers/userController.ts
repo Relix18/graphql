@@ -1,8 +1,10 @@
-import { NextFunction, Request, Response } from "express";
-import { User } from "../models/userModel.js";
+import { Request, Response } from "express";
+import { IUser, User } from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import ErrorHandler from "../utils/errorHandler.js";
 import jwt from "jsonwebtoken";
+import { app } from "../app.js";
+import { errorMiddleware } from "../middlewares/error.js";
 
 type TUser = {
   name: string;
@@ -109,5 +111,12 @@ export const getAllUsers = async () => {
 export const getUser = async (id: string) => {
   const user = await User.findById(id);
   console.log(user);
+  return user;
+};
+
+export const authUser = async ({ user }: { user: IUser }) => {
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
   return user;
 };

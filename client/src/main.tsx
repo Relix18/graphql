@@ -7,6 +7,7 @@ import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 const client = new ApolloClient({
   uri: import.meta.env.VITE_GRAPHQL_SERVER,
   cache: new InMemoryCache(),
+  credentials: "include",
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
