@@ -1,5 +1,7 @@
+import { Request } from "express";
 import { Todo } from "../models/dataModal.js";
 import ErrorHandler from "../utils/errorHandler.js";
+import { IUser } from "../models/userModel.js";
 
 type ITodo = {
   title: string;
@@ -8,19 +10,19 @@ type ITodo = {
 };
 
 export const createTodo = async (
-  _: any,
-  { title, description, user }: ITodo
+  { title, description }: ITodo,
+  { user }: { user: IUser }
 ) => {
   try {
-    return await Todo.create({ title, description, user });
+    return await Todo.create({ title, description, user: user._id });
   } catch (error: any) {
     return new ErrorHandler(400, error.message);
   }
 };
 
-export const getTodos = async (id: string) => {
+export const getTodos = async ({ user }: { user: IUser }) => {
   try {
-    const todos = await Todo.find({ user: id });
+    const todos = await Todo.find({ user: user._id });
     return todos;
   } catch (error: any) {
     return new ErrorHandler(400, error.message);
@@ -28,9 +30,12 @@ export const getTodos = async (id: string) => {
 };
 
 export const deleteTodo = async (id: string) => {
+  console.log(id);
   try {
-    await Todo.findByIdAndDelete(id);
-    return "Deleted successfully";
+    const data = await Todo.findByIdAndDelete(id);
+
+    if (!data) return new ErrorHandler(404, "Todo not found");
+    return { message: "Deleted successfully", id };
   } catch (error: any) {
     return new ErrorHandler(400, error.message);
   }

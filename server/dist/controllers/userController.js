@@ -75,7 +75,6 @@ export const getAllUsers = async () => {
 };
 export const getUser = async (id) => {
     const user = await User.findById(id);
-    console.log(user);
     return user;
 };
 export const authUser = async ({ user }) => {

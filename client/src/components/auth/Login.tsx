@@ -35,9 +35,9 @@ const Login = () => {
 
   useEffect(() => {
     if (userData) {
-      console.log(userData);
       navigate("/");
     }
+    console.log(userData);
     if (userError) {
       console.log(userError);
     }

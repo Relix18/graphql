@@ -1,25 +1,102 @@
-import React, { useEffect } from "react";
-import { getUser } from "../graphql/query/query";
-import { gql, useQuery } from "@apollo/client";
+import React, { useEffect, useState } from "react";
+import { addTodo, deleteTodo, getTodos, getUser } from "../graphql/query/query";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+type ITodo = {
+  _id: string;
+  title: string;
+  description: string;
+};
 
 const Page = () => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const navigate = useNavigate();
+  const { error: userError, data: userData } = useQuery(gql(getUser));
   const {
-    loading: userLoading,
-    error: userError,
-    data: userData,
-  } = useQuery(gql(getUser));
+    loading: todosLoading,
+    error: todosError,
+    data: todos,
+  } = useQuery(gql(getTodos));
+
+  const [add, { data: newTodos }] = useMutation(gql(addTodo), {
+    update: (cache, { data: { createTodo } }) => {
+      const existingTodos = cache.readQuery({
+        query: gql(getTodos),
+      });
+
+      cache.writeQuery({
+        query: gql(getTodos),
+        data: {
+          getTodos: [...existingTodos.getTodos, createTodo],
+        },
+      });
+    },
+  });
+
+  const [dlt, { data: deleted }] = useMutation(gql(deleteTodo), {
+    update: (cache, { data: { deleteTodo } }) => {
+      const existingTodos = cache.readQuery({
+        query: gql(getTodos),
+      });
+      const newTodos = existingTodos.getTodos.filter(
+        (todo: ITodo) => todo._id !== deleteTodo.id
+      );
+      console.log(deleteTodo);
+      cache.writeQuery({
+        query: gql(getTodos),
+        data: {
+          getTodos: newTodos,
+        },
+      });
+    },
+  });
 
   useEffect(() => {
     if (userError) {
       console.log(userError);
       navigate("/login");
     }
+    console.log(userData);
     if (!userData) {
       navigate("/login");
     }
   }, [userError, userData, navigate]);
+
+  useEffect(() => {
+    if (todosError) {
+      console.log(todosError);
+    }
+    if (newTodos) {
+      console.log(newTodos);
+    }
+  }, [todosError, newTodos, todos]);
+
+  useEffect(() => {
+    if (deleted) {
+      console.log(deleted.deleteTodo.message);
+    }
+  }, [deleted]);
+  const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    add({ variables: { title, description } });
+    setTitle("");
+    setDescription("");
+  };
+
+  const deleteHanlder = (id: string) => {
+    console.log(id);
+    dlt({ variables: { deleteTodoId: id } });
+  };
+
+  const logout = async () => {
+    await axios("http://localhost:4000/api/v1/user/logout", {
+      withCredentials: true,
+    });
+    navigate("/login");
+  };
 
   return (
     <section className="mb-6">
@@ -79,7 +156,10 @@ const Page = () => {
               </li>
 
               <li className="text-gray-600 md:mr-12 hover:text-blue-600">
-                <button className=" border-2 border-blue-600 px-6 py-1 font-medium text-blue-600 transition-colors hover:bg-blue-600 hover:text-white">
+                <button
+                  onClick={logout}
+                  className=" border-2 border-blue-600 px-6 py-1 font-medium text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+                >
                   Logout
                 </button>
               </li>
@@ -90,7 +170,10 @@ const Page = () => {
 
       <div className="mx-auto max-w-screen-xl px-4 md:px-8">
         {/* Heading */}
-        <div className="my-8 flex w-9/12 flex-col space-y-5  border py-10 px-5 shadow-md bg-white mx-auto">
+        <form
+          onSubmit={(e) => submitHandler(e)}
+          className="my-8 flex w-9/12 flex-col space-y-5  border py-10 px-5 shadow-md bg-white mx-auto"
+        >
           <div className="mx-auto mb-2 space-y-3">
             <h1 className=" text-3xl font-bold text-gray-700">Add Todo</h1>
           </div>
@@ -101,6 +184,8 @@ const Page = () => {
                 id="title"
                 className="border-1 peer block w-full appearance-none border border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
                 placeholder=" "
+                required
+                onChange={(e) => setTitle(e.target.value)}
               />
               <label
                 htmlFor="title"
@@ -117,6 +202,8 @@ const Page = () => {
                 id="description"
                 className="border-1 h-24 resize-none peer block w-full appearance-none border border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
                 placeholder=" "
+                required
+                onChange={(e) => setDescription(e.target.value)}
               />
               <label
                 htmlFor="description"
@@ -127,117 +214,46 @@ const Page = () => {
               </label>
             </div>
           </div>
-          <button className=" bg-blue-600 py-3 font-bold text-white">
+          <button
+            type="submit"
+            className=" bg-blue-600 py-3 font-bold text-white"
+          >
             Add
           </button>
-        </div>
+        </form>
         {/* /Heading */}
         <div className="grid gap-8 sm:grid-cols-2 sm:gap-12 lg:grid-cols-3">
           {/* Article */}
-          <article className="relative select-none bg-blue-50 px-8 pt-10 pb-20 text-blue-900 shadow-md">
-            <h1 className="text-sm uppercase">nodejs</h1>
-            <h1 className="text-lg font-semibold">
-              How Good is PNPM when compared to Yarn and Turbo
-            </h1>
-            <a
-              href="#"
-              className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-blue-500 text-white transition-all hover:w-16"
+          {todos?.getTodos.map((todo: ITodo) => (
+            <article
+              key={todo._id}
+              className="relative select-none bg-blue-50 px-8 pt-10 pb-20 text-blue-900 shadow-md"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+              <h1 className="text-md mb-4 uppercase">{todo.title}</h1>
+              <h1 className="text-sm font-semibold">{todo.description}</h1>
+              <button
+                onClick={() => deleteHanlder(todo._id)}
+                className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-blue-500 text-white transition-all hover:w-16"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14 5l7 7m0 0l-7 7m7-7H3"
-                />
-              </svg>
-            </a>
-          </article>
-          {/* /Article */}
-          {/* Article */}
-          <article className="relative select-none bg-blue-50 px-8 pt-10 pb-20 text-blue-900 shadow-md">
-            <h1 className="text-sm uppercase">Deno</h1>
-            <h1 className="text-lg font-semibold">Is Deno really the Future</h1>
-            <a
-              href="#"
-              className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-blue-500 text-white transition-all hover:w-16"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14 5l7 7m0 0l-7 7m7-7H3"
-                />
-              </svg>
-            </a>
-          </article>
-          {/* /Article */}
-          {/* Article */}
-          <article className="relative select-none bg-blue-50 px-8 pt-10 pb-20 text-blue-900 shadow-md">
-            <h1 className="text-sm uppercase">Framworks</h1>
-            <h1 className="text-lg font-semibold">
-              Svelte's actual Value Proposition
-            </h1>
-            <a
-              href="#"
-              className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-blue-500 text-white transition-all hover:w-16"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14 5l7 7m0 0l-7 7m7-7H3"
-                />
-              </svg>
-            </a>
-          </article>
-          {/* /Article */}
-          {/* Article */}
-          <article className="relative select-none bg-blue-50 px-8 pt-10 pb-20 text-blue-900 shadow-md">
-            <h1 className="text-sm uppercase">css</h1>
-            <h1 className="text-lg font-semibold">
-              Integrating Tailwind into your Devflow
-            </h1>
-            <a
-              href="#"
-              className="absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center bg-blue-500 text-white transition-all hover:w-16"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14 5l7 7m0 0l-7 7m7-7H3"
-                />
-              </svg>
-            </a>
-          </article>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
+                    stroke="#fff"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </article>
+          ))}
           {/* /Article */}
         </div>
       </div>

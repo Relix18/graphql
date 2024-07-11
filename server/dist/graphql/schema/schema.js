@@ -21,14 +21,19 @@ type Todo {
 type Query {
     users: [User]
     user(id: ID!): User
-    getTodos(id: ID!): [Todo]
-    deleteTodo(id: ID!): String
+    getTodos: [Todo]
     currentUser: User
+}
+
+type DeleteData{
+    message: String!
+    id: ID!
 }
 
 type Mutation {
     register(name: String!, email: String!, password: String!): AuthPayload!
     logIn(email: String!, password: String!): AuthPayload!
-    createTodo(title: String!, description: String!, user: ID!): Todo
+    createTodo(title: String!, description: String!): Todo
+    deleteTodo(id: ID!): DeleteData!
 }
 `;

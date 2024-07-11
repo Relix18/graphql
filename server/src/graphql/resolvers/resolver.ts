@@ -15,8 +15,7 @@ export const resolver = {
   Query: {
     users: getAllUsers,
     user: (_: any, args: any) => getUser(args.id),
-    getTodos: (_: any, args: any) => getTodos(args.id),
-    deleteTodo: (_: any, args: any) => deleteTodo(args.id),
+    getTodos: (_: any, __: any, { req }: { req: any }) => getTodos(req),
     currentUser: async (_: any, __: any, { req }: { req: any }) =>
       await authUser(req),
   },
@@ -26,8 +25,10 @@ export const resolver = {
     },
   },
   Mutation: {
-    createTodo,
+    createTodo: (_: any, args: any, { req }: { req: any }) =>
+      createTodo(args, req),
     register,
+    deleteTodo: (_: any, args: any) => deleteTodo(args.id),
     logIn,
   },
 };

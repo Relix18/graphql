@@ -30,3 +30,30 @@ mutation Mutation($name: String!, $email: String!, $password: String!) {
       _id
     }
 }}`;
+
+export const getTodos = `#graphql
+query Query {
+  getTodos {
+    title
+    description
+    _id
+  }
+}`;
+
+export const addTodo = `#graphql
+mutation Mutation($title: String!, $description: String!) {
+  createTodo(title: $title, description: $description) {
+    _id
+    title
+    description
+  }
+}
+`;
+
+export const deleteTodo = `#graphql
+mutation Mutation($deleteTodoId: ID!) {
+  deleteTodo(id: $deleteTodoId){
+    message
+    id
+  }
+}`;

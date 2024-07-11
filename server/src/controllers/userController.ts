@@ -110,7 +110,6 @@ export const getAllUsers = async () => {
 
 export const getUser = async (id: string) => {
   const user = await User.findById(id);
-  console.log(user);
   return user;
 };
 

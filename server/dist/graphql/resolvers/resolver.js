@@ -5,8 +5,7 @@ export const resolver = {
     Query: {
         users: getAllUsers,
         user: (_, args) => getUser(args.id),
-        getTodos: (_, args) => getTodos(args.id),
-        deleteTodo: (_, args) => deleteTodo(args.id),
+        getTodos: (_, __, { req }) => getTodos(req),
         currentUser: async (_, __, { req }) => await authUser(req),
     },
     Todo: {
@@ -15,8 +14,9 @@ export const resolver = {
         },
     },
     Mutation: {
-        createTodo,
+        createTodo: (_, args, { req }) => createTodo(args, req),
         register,
+        deleteTodo: (_, args) => deleteTodo(args.id),
         logIn,
     },
 };
