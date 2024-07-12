@@ -3,8 +3,6 @@ import { IUser, User } from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import ErrorHandler from "../utils/errorHandler.js";
 import jwt from "jsonwebtoken";
-import { app } from "../app.js";
-import { errorMiddleware } from "../middlewares/error.js";
 
 type TUser = {
   name: string;
@@ -59,7 +57,6 @@ export const logIn = async (
   try {
     // Find user by email
     const user = await User.findOne({ email }).select("+password");
-    console.log(user);
     if (!user) {
       throw new ErrorHandler(400, "User with this email does not exist");
     }
@@ -80,11 +77,10 @@ export const logIn = async (
       { expiresIn: "3d" }
     );
 
-    // Set token as a cookie in the response
     context.res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Set secure to true in production
-      maxAge: 1000 * 60 * 60 * 24 * 3, // 3 days in milliseconds
+      secure: true,
+      maxAge: 1000 * 60 * 60 * 24 * 3,
     });
 
     // Return user and token
@@ -94,13 +90,12 @@ export const logIn = async (
   }
 };
 
-export const logOut = (req: Request, res: Response) => {
-  try {
-    res.clearCookie("token");
-    res.status(200).json({ success: true, message: "Logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to logout" });
-  }
+export const logOut = (res: Response) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+    httpOnly: true,
+  });
+  return "Logged out successfully";
 };
 
 export const getAllUsers = async () => {

@@ -33,7 +33,6 @@ export const logIn = async (_, { email, password }, context) => {
     try {
         // Find user by email
         const user = await User.findOne({ email }).select("+password");
-        console.log(user);
         if (!user) {
             throw new ErrorHandler(400, "User with this email does not exist");
         }
@@ -47,11 +46,10 @@ export const logIn = async (_, { email, password }, context) => {
             email: user.email,
             id: user._id,
         }, process.env.JWT_SECRET, { expiresIn: "3d" });
-        // Set token as a cookie in the response
         context.res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Set secure to true in production
-            maxAge: 1000 * 60 * 60 * 24 * 3, // 3 days in milliseconds
+            secure: true,
+            maxAge: 1000 * 60 * 60 * 24 * 3,
         });
         // Return user and token
         return { user, token };
@@ -60,14 +58,12 @@ export const logIn = async (_, { email, password }, context) => {
         return new ErrorHandler(400, error.message);
     }
 };
-export const logOut = (req, res) => {
-    try {
-        res.clearCookie("token");
-        res.status(200).json({ success: true, message: "Logged out successfully" });
-    }
-    catch (error) {
-        res.status(500).json({ success: false, message: "Failed to logout" });
-    }
+export const logOut = (res) => {
+    res.cookie("token", null, {
+        expires: new Date(Date.now()),
+        httpOnly: true,
+    });
+    return "Logged out successfully";
 };
 export const getAllUsers = async () => {
     const user = await User.find();

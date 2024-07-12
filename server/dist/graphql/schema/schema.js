@@ -23,6 +23,7 @@ type Query {
     user(id: ID!): User
     getTodos: [Todo]
     currentUser: User
+
 }
 
 type DeleteData{
@@ -35,5 +36,6 @@ type Mutation {
     logIn(email: String!, password: String!): AuthPayload!
     createTodo(title: String!, description: String!): Todo
     deleteTodo(id: ID!): DeleteData!
+    signOut: String
 }
 `;

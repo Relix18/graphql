@@ -13,6 +13,7 @@ export const createTodo = async (
   { title, description }: ITodo,
   { user }: { user: IUser }
 ) => {
+  if (!user) return new ErrorHandler(400, "User not found");
   try {
     return await Todo.create({ title, description, user: user._id });
   } catch (error: any) {
@@ -21,6 +22,7 @@ export const createTodo = async (
 };
 
 export const getTodos = async ({ user }: { user: IUser }) => {
+  if (!user) return new ErrorHandler(400, "User not found");
   try {
     const todos = await Todo.find({ user: user._id });
     return todos;
@@ -30,7 +32,6 @@ export const getTodos = async ({ user }: { user: IUser }) => {
 };
 
 export const deleteTodo = async (id: string) => {
-  console.log(id);
   try {
     const data = await Todo.findByIdAndDelete(id);
 

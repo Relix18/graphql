@@ -3,6 +3,7 @@ import {
   getAllUsers,
   getUser,
   logIn,
+  logOut,
 } from "../../controllers/userController.js";
 import {
   createTodo,
@@ -30,5 +31,6 @@ export const resolver = {
     register,
     deleteTodo: (_: any, args: any) => deleteTodo(args.id),
     logIn,
+    signOut: (_: any, __: any, { res }: { res: any }) => logOut(res),
   },
 };

@@ -9,7 +9,9 @@ import { connectDB } from "./database/database.js";
 import { resolver } from "./graphql/resolvers/resolver.js";
 import cookieParser from "cookie-parser";
 import user from "./routes/userRoute.js";
-import authMiddleware from "./middlewares/auth.js";
+import jwt from "jsonwebtoken";
+import { User } from "./models/userModel.js";
+import { authMiddleware } from "./middlewares/auth.js";
 
 dotenv.config({ path: "./.env" });
 connectDB(process.env.MONGO_URI!);
@@ -17,7 +19,7 @@ connectDB(process.env.MONGO_URI!);
 export const envMode = process.env.NODE_ENV?.trim() || "DEVELOPMENT";
 const port = Number(process.env.PORT) || 3000;
 
-const app = express();
+export const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
@@ -27,7 +29,6 @@ app.use(
     credentials: true,
   })
 );
-app.use(authMiddleware);
 
 // Create a new ApolloServer instance with the necessary configuration
 const server = new ApolloServer({
@@ -40,6 +41,8 @@ const server = new ApolloServer({
   }),
 });
 
+// app.use(authMiddleware);
+
 // Start the ApolloServer
 await server.start();
 
@@ -47,7 +50,7 @@ await server.start();
 app.use(
   "/graphql",
   expressMiddleware(server, {
-    context: async ({ req, res }) => ({ req, res }),
+    context: authMiddleware,
   })
 );
 

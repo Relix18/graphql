@@ -44,7 +44,7 @@ const Login = () => {
     if (userLoading) {
       console.log(userLoading);
     }
-  }, [userData]);
+  }, [userData, userError, userLoading, navigate]);
 
   useEffect(() => {
     if (signupError) {

@@ -57,3 +57,8 @@ mutation Mutation($deleteTodoId: ID!) {
     id
   }
 }`;
+
+export const signOut = `#graphql
+mutation Mutation {
+  signOut
+}`;

@@ -1,4 +1,4 @@
-import { authUser, getAllUsers, getUser, logIn, } from "../../controllers/userController.js";
+import { authUser, getAllUsers, getUser, logIn, logOut, } from "../../controllers/userController.js";
 import { createTodo, deleteTodo, getTodos, } from "../../controllers/dataController.js";
 import { register } from "module";
 export const resolver = {
@@ -18,5 +18,6 @@ export const resolver = {
         register,
         deleteTodo: (_, args) => deleteTodo(args.id),
         logIn,
+        signOut: (_, __, { res }) => logOut(res),
     },
 };
